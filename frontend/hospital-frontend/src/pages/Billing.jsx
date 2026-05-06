@@ -29,8 +29,12 @@ const Billing = () => {
   }, []);
 
   const fetchPatients = useCallback(async () => {
-    const { data } = await api.get('/patients/');
-    setPatients(data.results || data);
+    try {
+      const { data } = await api.get('/patients/');
+      setPatients(data.results || data);
+    } catch (error) {
+      toast.error('Failed to load patients');
+    }
   }, []);
 
   useEffect(() => {
