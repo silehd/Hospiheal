@@ -1,8 +1,18 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions
-from .models import User, ROLE_CHOICES  # Import ROLE_CHOICES from models
+from .models import User, ROLE_CHOICES
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+# -------------------------------
+# Custom JWT Serializer (uses email)
+# -------------------------------
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'email'
+
+# -------------------------------
+# User Serializers
+# -------------------------------
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
     
@@ -19,7 +29,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     confirm_password = serializers.CharField(write_only=True, required=True)
-    role = serializers.ChoiceField(choices=ROLE_CHOICES, default='staff')  # Now ROLE_CHOICES is defined
+    role = serializers.ChoiceField(choices=ROLE_CHOICES, default='staff')
     
     class Meta:
         model = User
@@ -51,6 +61,9 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({"confirm_new_password": "New passwords don't match."})
         return attrs
 
+# -------------------------------
+# Password Reset Serializers
+# -------------------------------
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
 

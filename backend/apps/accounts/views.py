@@ -1,30 +1,31 @@
-from pytz import timezone
-from rest_framework import generics, serializers, status, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .models import User
-from .serializers import UserSerializer, UserCreateSerializer, UserUpdateSerializer, ChangePasswordSerializer
-from .permissions import IsAdmin
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils import timezone
 from datetime import timedelta
-from .models import PasswordResetToken
-from .serializers import PasswordResetRequestSerializer, PasswordResetConfirmSerializer
+from .models import User, PasswordResetToken
+from .serializers import (
+    UserSerializer, UserCreateSerializer, UserUpdateSerializer, ChangePasswordSerializer,
+    PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
+    CustomTokenObtainPairSerializer
+)
 
+# -------------------------------
+# Custom JWT Login View (uses email)
+# -------------------------------
 class CustomTokenObtainPairView(TokenObtainPairView):
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        if response.status_code == 200:
-            user = authenticate(email=request.data.get('email'), password=request.data.get('password'))
-            if user:
-                response.data['user'] = UserSerializer(user).data
-        return response
+    serializer_class = CustomTokenObtainPairSerializer
 
+# -------------------------------
+# Logout View
+# -------------------------------
 class LogoutView(APIView):
-    permission_classes = [permissions.IsAuthenticated]  # ← class, not instance
+    permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         try:
@@ -35,9 +36,12 @@ class LogoutView(APIView):
         except Exception:
             return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
 
+# -------------------------------
+# User Management Views (Admin only)
+# -------------------------------
 class UserListCreateView(generics.ListCreateAPIView):
     queryset = User.objects.all()
-    permission_classes = [IsAdmin]  # ← class
+    permission_classes = [permissions.IsAdminUser]
     
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -46,16 +50,18 @@ class UserListCreateView(generics.ListCreateAPIView):
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
-    permission_classes = [IsAdmin]
-    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAdminUser]
     
     def get_serializer_class(self):
         if self.request.method in ['PUT', 'PATCH']:
             return UserUpdateSerializer
         return UserSerializer
 
+# -------------------------------
+# Change Password (Authenticated users)
+# -------------------------------
 class ChangePasswordView(APIView):
-    permission_classes = [permissions.IsAuthenticated]  # ← class
+    permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
         serializer = ChangePasswordSerializer(data=request.data)
@@ -63,20 +69,24 @@ class ChangePasswordView(APIView):
             user = request.user
             if not user.check_password(serializer.validated_data['old_password']):
                 return Response({"old_password": "Wrong password"}, status=status.HTTP_400_BAD_REQUEST)
-            
             user.set_password(serializer.validated_data['new_password'])
             user.save()
             return Response({"message": "Password updated successfully"}, status=status.HTTP_200_OK)
-        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# -------------------------------
+# Current User Details
+# -------------------------------
 class CurrentUserView(APIView):
-    permission_classes = [permissions.IsAuthenticated]  # ← class
+    permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
 
+# -------------------------------
+# Password Reset (Forgot Password)
+# -------------------------------
 class PasswordResetRequestView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -89,6 +99,7 @@ class PasswordResetRequestView(APIView):
         except User.DoesNotExist:
             return Response({"message": "If the email exists, a reset link has been sent."}, status=status.HTTP_200_OK)
 
+        # Delete old tokens
         PasswordResetToken.objects.filter(user=user).delete()
         token = PasswordResetToken.generate_token()
         expires_at = timezone.now() + timedelta(hours=1)
@@ -96,7 +107,7 @@ class PasswordResetRequestView(APIView):
 
         reset_link = f"{request.build_absolute_uri('/')[:-1]}/reset-password?token={token}"
         if settings.DEBUG:
-            print(f"Reset link for {email}: {reset_link}")
+            print(f"Password reset link for {email}: {reset_link}")
         else:
             send_mail(
                 subject='Password Reset Request',
@@ -130,9 +141,12 @@ class PasswordResetConfirmView(APIView):
         user.save()
         reset_token.delete()
         return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
-    
+
+# -------------------------------
+# Admin Reset Password (for other users)
+# -------------------------------
 class AdminResetPasswordView(APIView):
-    permission_classes = [IsAdmin]
+    permission_classes = [permissions.IsAdminUser]
 
     def post(self, request, pk):
         try:
