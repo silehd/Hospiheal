@@ -3,7 +3,6 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Edit, KeyRound, Shield, UserX } from 'lucide-react';
 import LoadingSpinner from '../components/Common/LoadingSpinner';
-import Card from '../components/Common/Card';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
