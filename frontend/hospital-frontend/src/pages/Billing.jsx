@@ -17,15 +17,6 @@ const Billing = () => {
 
   const { register, handleSubmit, reset } = useForm();
 
-  useEffect(() => {
-    if (canViewBill) {
-      fetchBills();
-      fetchPatients();
-    } else {
-      setLoading(false);
-    }
-  }, [fetchbills][canViewBill]);
-
   const fetchBills = useCallback(async () => {
     try {
       const { data } = await api.get('/bills/');
@@ -37,10 +28,19 @@ const Billing = () => {
     }
   }, []);
 
-  const fetchPatients = async () => {
+  const fetchPatients = useCallback(async () => {
     const { data } = await api.get('/patients/');
     setPatients(data.results || data);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (canViewBill) {
+      fetchBills();
+      fetchPatients();
+    } else {
+      setLoading(false);
+    }
+  }, [canViewBill, fetchBills, fetchPatients]);
 
   const onSubmit = async (formData) => {
     try {
@@ -50,7 +50,7 @@ const Billing = () => {
       setShowModal(false);
       reset();
     } catch (error) {
-      toast.error('Failed to create bill');
+      toast.error(error.response?.data?.detail || 'Failed to create bill');
     }
   };
 
@@ -106,7 +106,6 @@ const Billing = () => {
         </table>
       </div>
 
-      {/* Modal – only if canAddBill */}
       {showModal && canAddBill && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
