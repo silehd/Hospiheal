@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { ChevronDown, X, Mail, Eye, EyeOff } from 'lucide-react';
+import { X, Mail, Eye, EyeOff } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';

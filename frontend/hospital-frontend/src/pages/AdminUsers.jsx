@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Edit, Trash2, KeyRound, Shield, UserX } from 'lucide-react';
+import { Edit, KeyRound, Shield, UserX } from 'lucide-react';
 import LoadingSpinner from '../components/Common/LoadingSpinner';
 import Card from '../components/Common/Card';
 

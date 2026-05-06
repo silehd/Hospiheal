@@ -24,7 +24,7 @@ const Billing = () => {
     } else {
       setLoading(false);
     }
-  }, [canViewBill]);
+  }, [fetchbills][canViewBill]);
 
   const fetchBills = useCallback(async () => {
     try {
