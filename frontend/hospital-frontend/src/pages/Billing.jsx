@@ -17,6 +17,7 @@ const Billing = () => {
 
   const { register, handleSubmit, reset } = useForm();
 
+  // Corrected function name: fetchBills
   const fetchBills = useCallback(async () => {
     try {
       const { data } = await api.get('/bills/');
