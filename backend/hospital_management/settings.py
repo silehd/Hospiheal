@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
 import django.template.context
+import dj_database_url
 
 # Fix for Python 3.14 admin template context copying
 if not hasattr(django.template.context.BaseContext, '__copy__'):
@@ -16,12 +17,9 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-dev-key')
 
-DEBUG = os.getenv('DEBUG', 'False') == 'False'
-ALLOWED_HOSTS = [
-    "hospiheal-aebsi3pzu-silehds-projects.vercel.app",
-    ".vercel.app"
-]
-ALLOWED_HOSTS = ['*']
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -59,6 +57,7 @@ ROOT_URLCONF = 'hospital_management.urls'
 
 WSGI_APPLICATION = 'hospital_management.wsgi.application'
 
+DATABASES = {'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))}
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -139,10 +138,8 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = DEBUG
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
