@@ -1,0 +1,17 @@
+# Environment files
+.env
+*.env
+
+# Backend (Python/Django)
+venv/
+__pycache__/
+*.pyc
+db.sqlite3
+staticfiles/
+media/
+
+# Frontend (React)
+node_modules/
+build/
+.env.local
+.env.production
