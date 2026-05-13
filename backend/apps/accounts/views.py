@@ -159,3 +159,8 @@ class AdminResetPasswordView(APIView):
         user.set_password(new_password)
         user.save()
         return Response({"message": "Password reset successfully"}, status=status.HTTP_200_OK)
+    
+class PublicRegistrationView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserCreateSerializer
+    permission_classes = [permissions.AllowAny]

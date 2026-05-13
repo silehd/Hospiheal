@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { X, Mail, Eye, EyeOff } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import HspLogo from '../hsp-logo.svg';
@@ -53,6 +53,10 @@ const Login = () => {
         {/* Left Side: Login Form */}
         <div className="flex-1 flex items-center justify-center p-8 md:p-12">
           <div className="bg-white w-full max-w-sm rounded-[30px] p-10 shadow-lg">
+            {/* Added title */}
+            <h2 className="text-sm font-semibold text-center text-gray-500 uppercase tracking-wider mb-2">
+              HOSPIHEAL MEDICAL CENTRE
+            </h2>
             <h1 className="text-2xl font-bold text-center text-gray-800 mb-8 tracking-wide">SIGN IN</h1>
             <form onSubmit={handleSubmit} className="space-y-5">
               <input 
@@ -94,10 +98,19 @@ const Login = () => {
                 </button>
               </div>
             </form>
+            {/* Registration link */}
+            <div className="text-center mt-6">
+              <p className="text-sm text-gray-600">
+                Don't have an account?{' '}
+                <Link to="/register" className="text-[#007684] font-semibold hover:underline">
+                  Sign Up
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Right Side: Branding & Image */}
+        {/* Right Side: Branding & Image (unchanged) */}
         <div className="hidden md:block flex-[1.2] bg-cover bg-center relative" style={{ backgroundImage: `url('https://cdn.prod.website-files.com/6466101d017ab9d60c8d0137/65df25f0a339915ec6c00de7_Out%20of%20Hospital%20Costs_Savings%20for%20Medical%20Schemes.jpg')` }}>
           <div className="absolute top-8 right-8 bg-white/95 backdrop-blur-sm p-3 rounded-2xl shadow-lg">
             <img src={HspLogo} alt="Hospheal Logo" className="h-20 w-20 object-contain" />
@@ -105,7 +118,7 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Forgot Password Modal */}
+      {/* Forgot Password Modal (unchanged) */}
       {showForgotModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 relative">

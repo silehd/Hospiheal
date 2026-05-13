@@ -8,6 +8,7 @@ from .views import (
     CurrentUserView,
     PasswordResetRequestView,
     PasswordResetConfirmView,
+    PublicRegistrationView
 )
 
 urlpatterns = [
@@ -15,6 +16,7 @@ urlpatterns = [
     path('auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/refresh/', CustomTokenObtainPairView.as_view(), name='token_refresh'),  # if you have a refresh view, otherwise use the built-in one
     path('auth/logout/', LogoutView.as_view(), name='logout'),
+    path('register/', PublicRegistrationView.as_view(), name='public-register'),
     
     # User management
     path('users/', UserListCreateView.as_view(), name='user-list'),
